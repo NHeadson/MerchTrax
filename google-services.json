@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "779649160924",
+    "project_id": "merchtrax-19931",
+    "storage_bucket": "merchtrax-19931.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:779649160924:android:107ff5486e07d4fd514619",
+        "android_client_info": {
+          "package_name": "com.merchtrax.app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCx-ZGoJogIy1Oueg78RKjPXLGtzxIYpC4"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
