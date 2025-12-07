@@ -1,0 +1,13 @@
+{
+	"version": "2.0.0",
+	"tasks": [
+		{
+			"label": "Start Expo in Development Mode",
+			"type": "shell",
+			"command": "npx expo start --dev-client",
+			"args": [],
+			"isBackground": true,
+			"problemMatcher": []
+		}
+	]
+}

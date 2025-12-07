@@ -126,11 +126,11 @@ export default function Navigation() {
           },
           tabBarShowLabel: false,
           tabBarStyle: {
-            backgroundColor: '#211C1F', // Updated to dark color
+            backgroundColor: '#211C1F',
             borderTopWidth: 0,
           },
           tabBarActiveTintColor: '#fff',
-          tabBarInactiveTintColor: '#ADB9E3', // Updated to accent color
+          tabBarInactiveTintColor: '#ADB9E3',
         })}>
         <Tab.Screen
           name="Home"
@@ -146,10 +146,12 @@ export default function Navigation() {
           name="Add"
           component={AddVisitScreen}
           options={{
-            headerShown: false,
             tabBarButton: (props) => (
               <AddButton navigation={props.navigation} />
-            ),
+            ), headerStyle: { backgroundColor: '#211C1F' },
+          headerTintColor: '#fff',
+          headerTitleStyle: { fontWeight: 'bold' },
+          headerTitle: 'Add a New Visit',
           }}
         />
         <Tab.Screen

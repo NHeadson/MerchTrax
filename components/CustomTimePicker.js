@@ -14,7 +14,7 @@ export default function CustomTimePicker({
     if (event.type === 'set' && selectedDate) {
       onChange(selectedDate);
     }
-    setShowPicker(false); // Close the picker
+    setShowPicker(false);
   };
 
   return (
@@ -32,7 +32,7 @@ export default function CustomTimePicker({
           mode="time"
           display="default"
           onChange={handlePickerChange}
-          textColor="#211C1F" // Dark color for text
+          textColor="#211C1F"
         />
       )}
     </View>
@@ -44,13 +44,13 @@ const styles = StyleSheet.create({
     marginBottom: 16,
   },
   button: {
-    backgroundColor: '#ADB9E3', // Accent color for button
+    backgroundColor: '#ADB9E3', 
     padding: 10,
     borderRadius: 5,
     alignItems: 'center',
   },
   text: {
-    color: '#211C1F', // Dark color for text
+    color: '#211C1F',
     fontSize: 16,
     fontWeight: 'bold',
   },

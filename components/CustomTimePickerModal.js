@@ -1,11 +1,11 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Modal,
   View,
   Text,
   TouchableOpacity,
   StyleSheet,
-  FlatList,
+  Platform,
 } from 'react-native';
 import { Picker } from '@react-native-picker/picker';
 
@@ -15,17 +15,38 @@ export default function CustomTimePickerModal({
   visible,
   onClose,
 }) {
-  const [selectedHour, setSelectedHour] = useState(value.getHours());
-  const [selectedMinute, setSelectedMinute] = useState(0); // Default to 00 minutes
-  const [amPm, setAmPm] = useState(value.getHours() >= 12 ? 'PM' : 'AM');
+  // Initialize with safe defaults, but rely on useEffect for the real sync
+  const [selectedHour, setSelectedHour] = useState(
+    value ? value.getHours() : 12
+  );
+  const [selectedMinute, setSelectedMinute] = useState(
+    value ? value.getMinutes() : 0
+  );
+  const [amPm, setAmPm] = useState(
+    value && value.getHours() >= 12 ? 'PM' : 'AM'
+  );
 
-  const hours = Array.from({ length: 12 }, (_, i) => i + 1);
-  const minutes = Array.from({ length: 12 }, (_, i) => i * 5); // Generate increments of 5 minutes
+  // FIX: Sync state with the 'value' prop whenever the modal opens
+  useEffect(() => {
+    if (visible && value) {
+      const h = value.getHours();
+      const m = value.getMinutes();
+      setSelectedHour(h);
+      setSelectedMinute(m);
+      setAmPm(h >= 12 ? 'PM' : 'AM');
+    }
+  }, [visible, value]);
+
+  const minutes = Array.from({ length: 12 }, (_, i) => i * 5);
 
   const handleConfirm = () => {
+    // Clone the date so we don't mutate the original immediately
     const newDate = new Date(value);
+
+    // setHours/setMinutes works in LOCAL time, so this is safe
     newDate.setHours(selectedHour);
     newDate.setMinutes(selectedMinute);
+
     onChange(newDate);
     onClose();
   };
@@ -34,17 +55,24 @@ export default function CustomTimePickerModal({
     <Modal
       visible={visible}
       transparent
-      animationType="slide">
+      animationType="slide"
+      onRequestClose={onClose}>
       <View style={styles.overlay}>
         <View style={styles.modalContainer}>
           <Text style={styles.title}>Select Time</Text>
           <View style={styles.pickerContainer}>
+            {/* HOUR PICKER */}
             <Picker
-              selectedValue={selectedHour % 12 || 12} // Convert to 12-hour format
-              onValueChange={(itemValue) =>
-                setSelectedHour(amPm === 'PM' ? itemValue + 12 : itemValue)
-              }
-              style={styles.picker}>
+              selectedValue={selectedHour % 12 || 12}
+              onValueChange={(itemValue) => {
+                // Adjust for AM/PM immediately when scrolling
+                let newHour = itemValue;
+                if (amPm === 'PM' && newHour !== 12) newHour += 12;
+                if (amPm === 'AM' && newHour === 12) newHour = 0;
+                setSelectedHour(newHour);
+              }}
+              style={styles.picker}
+              itemStyle={styles.pickerItem}>
               {Array.from({ length: 12 }, (_, i) => i + 1).map((hour) => (
                 <Picker.Item
                   key={hour}
@@ -54,11 +82,15 @@ export default function CustomTimePickerModal({
                 />
               ))}
             </Picker>
+
             <Text style={styles.separator}>:</Text>
+
+            {/* MINUTE PICKER */}
             <Picker
               selectedValue={selectedMinute}
               onValueChange={(itemValue) => setSelectedMinute(itemValue)}
-              style={styles.picker}>
+              style={styles.picker}
+              itemStyle={styles.pickerItem}>
               {minutes.map((minute) => (
                 <Picker.Item
                   key={minute}
@@ -69,6 +101,8 @@ export default function CustomTimePickerModal({
               ))}
             </Picker>
           </View>
+
+          {/* AM/PM SELECTOR */}
           <View style={styles.amPmContainer}>
             <TouchableOpacity
               style={[styles.amPmButton, amPm === 'AM' && styles.selectedAmPm]}
@@ -87,6 +121,7 @@ export default function CustomTimePickerModal({
               <Text style={styles.amPmText}>PM</Text>
             </TouchableOpacity>
           </View>
+
           <View style={styles.buttonContainer}>
             <TouchableOpacity
               style={styles.button}
@@ -108,93 +143,94 @@ export default function CustomTimePickerModal({
 const styles = StyleSheet.create({
   overlay: {
     flex: 1,
-    backgroundColor: 'rgba(0, 0, 0, 0.6)', // Darker overlay for better contrast
+    backgroundColor: 'rgba(0, 0, 0, 0.6)',
     justifyContent: 'center',
     alignItems: 'center',
   },
   modalContainer: {
     width: '85%',
-    backgroundColor: '#FFFFFF', // White background for a cleaner look
+    backgroundColor: '#FFFFFF',
     borderRadius: 15,
-    padding: 20,
+    padding: 25,
     alignItems: 'center',
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.25,
     shadowRadius: 4,
-    elevation: 5, // Add elevation for Android
+    elevation: 5,
   },
   title: {
-    fontSize: 20,
+    fontSize: 22,
     fontWeight: 'bold',
-    color: '#211C1F', // Dark color for text
-    marginBottom: 15,
+    color: '#211C1F',
+    marginBottom: 30,
   },
   pickerContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'space-evenly', // Distribute space evenly between hour and minute dropdowns
-    marginBottom: 20,
+    justifyContent: 'space-between',
+    marginBottom: 10,
+    paddingHorizontal: 30,
+    overflow: 'hidden',
+    height: Platform.OS === 'ios' ? 80 : 60,
   },
   picker: {
-    width: 100, // Increased width to accommodate two-digit values
-    height: 60, // Compact height for dropdowns
-    backgroundColor: '#F5F5F5', // Light gray for picker background
-    borderRadius: 10,
-    marginHorizontal: 10, // Increased spacing between dropdowns
-    justifyContent: 'center', // Center content vertically
-    alignItems: 'center', // Center content horizontally
-    textAlign: 'center', // Ensure text is horizontally centered
-    paddingRight: 3, // Further reduced padding to prevent value cutoff
-    paddingLeft: 3, // Ensure symmetry in padding
-    overflow: 'visible', // Prevent text from being truncated
+    width: Platform.OS === 'ios' ? 100 : 120,
+    height: Platform.OS === 'ios' ? 80 : 60,
+    marginHorizontal: 0,
+    paddingBottom: Platform.OS === 'ios' ? 210 : 0,
+    overflow: 'hidden',
   },
   pickerItem: {
-    textAlign: 'center', // Ensure picker item text is centered
-    justifyContent: 'center', // Center content vertically within the picker item
-    fontSize: 20, // Increased font size for better readability of two-digit values
+    fontSize: 20,
+    color: '#211C1F',
+    fontWeight: 'bold',
   },
   separator: {
-    fontSize: 24,
+    fontSize: 28,
     fontWeight: 'bold',
-    color: '#211C1F', // Dark color for text
+    color: '#211C1F',
+    marginHorizontal: 10,
   },
   amPmContainer: {
     flexDirection: 'row',
     justifyContent: 'center',
     marginTop: 10,
+    marginBottom: 10,
   },
   amPmButton: {
-    paddingVertical: 10,
-    paddingHorizontal: 20,
+    paddingVertical: 12,
+    paddingHorizontal: 25,
     marginHorizontal: 10,
-    borderRadius: 20,
-    backgroundColor: '#E6DFDB', // Light color for unselected items
+    borderRadius: 25,
+    backgroundColor: '#E6DFDB',
+    minWidth: 80,
+    alignItems: 'center',
   },
   selectedAmPm: {
-    backgroundColor: '#ADB9E3', // Accent color for selected items
+    backgroundColor: '#ADB9E3',
   },
   amPmText: {
     fontSize: 16,
-    color: '#211C1F', // Dark color for text
+    color: '#211C1F',
     fontWeight: 'bold',
   },
   buttonContainer: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     width: '100%',
-    marginTop: 20,
+    marginTop: 10,
   },
   button: {
     flex: 1,
     padding: 12,
     marginHorizontal: 10,
     borderRadius: 10,
-    backgroundColor: '#211C1F', // Dark color for buttons
+    backgroundColor: '#211C1F',
     alignItems: 'center',
   },
   buttonText: {
-    color: '#FFFFFF', // White color for button text
+    color: '#FFFFFF',
     fontSize: 16,
     fontWeight: 'bold',
   },

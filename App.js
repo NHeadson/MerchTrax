@@ -2,6 +2,7 @@ import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
 import Navigation from './components/Navigation';
 import { StyleSheet } from 'react-native';
 import { StatusBar } from 'react-native';
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
 
 const COLORS = {
   light: '#E6DFDB',
@@ -12,13 +13,15 @@ const COLORS = {
 
 export default function App() {
   return (
-    <SafeAreaProvider>
+    <GestureHandlerRootView style={{ flex: 1 }}>
+      <SafeAreaProvider>
         <StatusBar
           barStyle="dark-content"
           backgroundColor={COLORS.light} // Updated to use COLORS
         />
         <Navigation />
-    </SafeAreaProvider>
+      </SafeAreaProvider>
+    </GestureHandlerRootView>
   );
 }
 
