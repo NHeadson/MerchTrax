@@ -3,6 +3,16 @@ import Navigation from './components/Navigation';
 import { StyleSheet } from 'react-native';
 import { StatusBar } from 'react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
+import * as Notifications from 'expo-notifications';
+
+// Set up notification handler
+Notifications.setNotificationHandler({
+  handleNotification: async () => ({
+    shouldShowBanner: true,
+    shouldPlaySound: true,
+    shouldSetBadge: false,
+  }),
+});
 
 const COLORS = {
   light: '#E6DFDB',
