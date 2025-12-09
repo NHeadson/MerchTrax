@@ -154,10 +154,13 @@ const styles = StyleSheet.create({
     justifyContent: 'space-evenly',
     marginBottom: 10,
     height: Platform.OS === 'ios' ? 80 : 60,
+    width: Platform.OS === 'ios' ? '90%' : '80%',
+  },
+  picker: {
     overflow: 'hidden',
   },
   picker: {
-    width: Platform.OS === 'ios' ? 100 : 120,
+    width: Platform.OS === 'ios' ? 100 : 100,
     height: Platform.OS === 'ios' ? 80 : 60,
     borderRadius: 10,
     marginHorizontal: 5,

@@ -24,8 +24,8 @@ export default function TimerScreen() {
 
           if (endTime && !paused && now >= endTime) {
             // Timer should have ended while app was closed
-            handleTimerEnd();
-            // Clear the stored data
+            // Don't show alert here - it was already shown via push notification
+            // Just clear the stored data
             await AsyncStorage.removeItem('merchTrax_timer_data');
           }
         }
@@ -107,6 +107,7 @@ export default function TimerScreen() {
         resetTrigger={resetTrigger}
         paused={isPaused}
         visitTitle={visitData.title}
+        onPauseChange={setIsPaused}
       />
       <Text style={[styles.instruction, isPaused && styles.pausedText]}>
         {isPaused ? 'Timer Paused' : 'Timer will alert when time is up!'}

@@ -1,9 +1,10 @@
 import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
 import Navigation from './components/Navigation';
-import { StyleSheet } from 'react-native';
+import { StyleSheet, AppState } from 'react-native';
 import { StatusBar } from 'react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import * as Notifications from 'expo-notifications';
+import { useEffect } from 'react';
 
 // Set up notification handler
 Notifications.setNotificationHandler({
@@ -15,13 +16,24 @@ Notifications.setNotificationHandler({
 });
 
 const COLORS = {
-  light: '#E6DFDB',
-  dark: '#211C1F',
-  accent: '#ADB9E3',
-  accent2: '#C68080',
+  light: '#FFEAEE',
+  dark: '#192745',
+  accent: '#43DABC',
+  accent2: '#7F675B',
 };
 
 export default function App() {
+  useEffect(() => {
+    const subscription = AppState.addEventListener('change', (state) => {
+      if (state === 'active') {
+        // Clear badge when app comes to foreground
+        Notifications.setBadgeCountAsync(0);
+      }
+    });
+
+    return () => subscription.remove();
+  }, []);
+
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
       <SafeAreaProvider>
