@@ -20,10 +20,10 @@ export default function CountdownTimer({
   const timerEndedRef = useRef(false);
   const notificationScheduledRef = useRef(false);
 
-  // Function to handle countdown tick
+  // Function to handle countdown tick - ONLY called when NOT paused
   const tick = useCallback(() => {
     setSeconds((currentSeconds) => {
-      if (currentSeconds > 0 && endTime && !paused) {
+      if (currentSeconds > 0 && endTime) {
         const now = Date.now();
         const timeUntilEnd = endTime - now;
 
@@ -44,7 +44,7 @@ export default function CountdownTimer({
           return currentSeconds;
         } else {
           // Timer ended
-          cancelNotification();
+          cancelAllNotifications();
           cancelPersistentNotification();
           setEndTime(null);
 
@@ -59,7 +59,7 @@ export default function CountdownTimer({
       }
       return currentSeconds;
     });
-  }, [endTime, paused, onTimerEnd, visitTitle]);
+  }, [endTime, onTimerEnd, visitTitle]);
 
   // Storage key for timer persistence
   const TIMER_STORAGE_KEY = 'merchTrax_timer_data';
@@ -113,11 +113,30 @@ export default function CountdownTimer({
     [notificationId]
   );
 
-  // Cancel notification
+  // Cancel a single notification by ID
   const cancelNotification = async () => {
     if (notificationId) {
       await Notifications.cancelScheduledNotificationAsync(notificationId);
       setNotificationId(null);
+    }
+  };
+
+  // CRITICAL: Cancel all scheduled notifications for the timer
+  const cancelAllNotifications = async () => {
+    try {
+      // Cancel the single notification if its ID is tracked
+      if (notificationId) {
+        await Notifications.cancelScheduledNotificationAsync(notificationId);
+        setNotificationId(null);
+      }
+      // Cancel all 10 repeating notifications by their known identifiers
+      for (let i = 0; i < 10; i++) {
+        await Notifications.cancelScheduledNotificationAsync(
+          `timer-complete-${i}`
+        );
+      }
+    } catch (error) {
+      console.error('Error cancelling all notifications:', error);
     }
   };
 
@@ -209,7 +228,7 @@ export default function CountdownTimer({
       if (timeoutRef.current) {
         clearTimeout(timeoutRef.current);
       }
-      cancelNotification();
+      cancelAllNotifications();
       cancelPersistentNotification();
     };
   }, []);
@@ -283,7 +302,7 @@ export default function CountdownTimer({
   // Reset timer when resetTrigger changes
   React.useEffect(() => {
     setSeconds(initialSeconds);
-    cancelNotification(); // Cancel any existing notification
+    cancelAllNotifications(); // Cancel any existing notification
     cancelPersistentNotification(); // Cancel persistent notification
     timerEndedRef.current = false; // Reset the timer end flag
     notificationScheduledRef.current = false; // Reset notification scheduled flag
@@ -296,40 +315,55 @@ export default function CountdownTimer({
     }
   }, [resetTrigger, initialSeconds]);
 
-  // Handle pause/resume
+  // Handle pause/resume - simple approach
   useEffect(() => {
     if (paused) {
-      cancelNotification();
-    } else if (endTime && seconds > 0 && !notificationScheduledRef.current) {
-      // Schedule multiple notifications upfront when timer starts
-      sendMultipleNotifications(visitTitle, endTime);
-      notificationScheduledRef.current = true;
-    } else if (!endTime || seconds === 0) {
-      cancelPersistentNotification();
-    }
-  }, [paused, endTime, visitTitle]);
-
-  useEffect(() => {
-    // Clear any existing timeout
-    if (timeoutRef.current) {
-      clearTimeout(timeoutRef.current);
-      timeoutRef.current = null;
-    }
-
-    // Start timer if conditions are met
-    if (seconds > 0 && !paused && endTime) {
-      // Schedule first tick in 1 second
-      timeoutRef.current = setTimeout(() => tick(), 1000);
-    }
-
-    // Cleanup function
-    return () => {
+      // Pausing: stop the timer completely
       if (timeoutRef.current) {
         clearTimeout(timeoutRef.current);
         timeoutRef.current = null;
       }
+      // CRITICAL: Clear endTime so tick won't run and seconds won't update
+      setEndTime(null);
+      cancelAllNotifications();
+      cancelPersistentNotification();
+      // Mark notifications as not scheduled so we reschedule on resume
+      notificationScheduledRef.current = false;
+    } else {
+      // Resuming: recalculate endTime based on current seconds
+      if (seconds > 0) {
+        const newEndTime = Date.now() + seconds * 1000;
+        setEndTime(newEndTime);
+
+        // Always reschedule notifications when resuming
+        sendMultipleNotifications(visitTitle, newEndTime);
+        notificationScheduledRef.current = true;
+      }
+    }
+
+    return () => {
+      if (timeoutRef.current && paused) {
+        clearTimeout(timeoutRef.current);
+      }
     };
-  }, [paused, endTime, tick]); // Depend on tick function which has proper dependencies
+  }, [paused]);
+
+  // Start/stop the timer ticker based on state
+  useEffect(() => {
+    // Only run ticker if not paused, have endTime, and seconds remaining
+    if (!paused && seconds > 0 && endTime) {
+      if (timeoutRef.current) {
+        clearTimeout(timeoutRef.current);
+      }
+      timeoutRef.current = setTimeout(() => tick(), 1000);
+    }
+
+    return () => {
+      if (timeoutRef.current) {
+        clearTimeout(timeoutRef.current);
+      }
+    };
+  }, [paused, endTime, tick]);
 
   const formatTime = (secs) => {
     const minutes = Math.floor(secs / 60);

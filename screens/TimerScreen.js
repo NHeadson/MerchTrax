@@ -1,9 +1,21 @@
 import React from 'react';
-import { StyleSheet, Text, View, Alert, TouchableOpacity } from 'react-native';
-import { useNavigation } from '@react-navigation/native';
-import { useRoute } from '@react-navigation/native';
+import {
+  StyleSheet,
+  Text,
+  View,
+  Alert,
+  TouchableOpacity,
+  Modal,
+} from 'react-native';
+import {
+  useNavigation,
+  useRoute,
+  useFocusEffect,
+} from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { db } from '../firebase';
+import { doc, updateDoc } from 'firebase/firestore';
 import CountdownTimer from '../components/CountdownTimer';
 
 export default function TimerScreen() {
@@ -12,6 +24,17 @@ export default function TimerScreen() {
   const { visitData, initialSeconds } = route.params || {};
   const [resetTrigger, setResetTrigger] = React.useState(0);
   const [isPaused, setIsPaused] = React.useState(false);
+  const [showCompletionModal, setShowCompletionModal] = React.useState(false);
+
+  // FIX: Reset pause state every time the screen comes into focus with new data
+  useFocusEffect(
+    React.useCallback(() => {
+      // When the screen is focused, if it has timer data, it should not be paused.
+      if (visitData && initialSeconds) {
+        setIsPaused(false);
+      }
+    }, [visitData, initialSeconds])
+  );
 
   // Check if timer should have ended when screen loads
   React.useEffect(() => {
@@ -39,32 +62,79 @@ export default function TimerScreen() {
     }
   }, [visitData, initialSeconds]);
 
-  const handleTimerEnd = () => {
-    Alert.alert(
-      'Timer Complete!',
-      `Time's up for: ${visitData?.title || 'your visit'}`,
-      [{ text: 'OK' }]
-    );
+  const handleTimerEnd = async () => {
+    // Pause timer and clear stored timer data
+    setIsPaused(true);
+    try {
+      await AsyncStorage.removeItem('merchTrax_timer_data');
+    } catch (error) {
+      console.error('Error clearing timer data:', error);
+    }
+    setShowCompletionModal(true);
+  };
+
+  const handleCompletionNo = async () => {
+    setShowCompletionModal(false);
+    // Clear the timer parameters for this screen
+    navigation.setParams({ visitData: null, initialSeconds: null });
+    // Navigate to the Visits tab
+    navigation.navigate('Visits');
+  };
+
+  const handleCompletionYes = async () => {
+    if (visitData) {
+      try {
+        const visitRef = doc(db, 'visits', visitData.id);
+        await updateDoc(visitRef, {
+          completed: true,
+          completedAt: new Date().toISOString(),
+        });
+        console.log('Visit marked as complete');
+
+        // Clear the timer state before navigating
+        navigation.setParams({ visitData: null, initialSeconds: null });
+
+        // Navigate to History screen
+        navigation.navigate('History');
+      } catch (error) {
+        console.error('Error updating visit:', error);
+        Alert.alert('Error', 'Could not complete the visit. Please try again.');
+      }
+    }
+    setCompletionModalVisible(false);
   };
 
   const handleRestart = () => {
-    setResetTrigger((prev) => prev + 1);
+    // Ensure the timer is not paused when restarting
     setIsPaused(false);
+    setResetTrigger((prev) => prev + 1);
   };
 
   const handlePauseResume = () => {
     setIsPaused((prev) => !prev);
   };
 
-  const handleEnd = () => {
-    Alert.alert('End Timer', 'Are you sure you want to end this timer?', [
-      { text: 'Cancel', style: 'cancel' },
-      {
-        text: 'End',
-        style: 'destructive',
-        onPress: () => navigation.goBack(),
-      },
-    ]);
+  const handleEnd = async () => {
+    try {
+      // Clear timer data from storage
+      await AsyncStorage.removeItem('merchTrax_timer_data');
+
+      // Reset navigation to the Visits screen, clearing the stack
+      navigation.reset({
+        index: 0,
+        routes: [{ name: 'Visits' }],
+      });
+      // Clear the specific timer from this screen
+      navigation.setParams({ visitData: null, initialSeconds: null });
+    } catch (error) {
+      console.error('Error clearing timer data:', error);
+      // Still attempt to navigate away on error
+      navigation.reset({
+        index: 0,
+        routes: [{ name: 'Visits' }],
+      });
+      navigation.setParams({ visitData: null, initialSeconds: null });
+    }
   };
 
   if (!visitData || !initialSeconds) {
@@ -141,6 +211,41 @@ export default function TimerScreen() {
           />
         </TouchableOpacity>
       </View>
+
+      {/* Completion Modal */}
+      <Modal
+        visible={showCompletionModal}
+        transparent={true}
+        animationType="fade">
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalContent}>
+            <View style={styles.modalHeader}>
+              <Ionicons
+                name="checkmark-circle"
+                size={60}
+                color="#43DABC"
+              />
+            </View>
+            <Text style={styles.modalTitle}>Time's Up!</Text>
+            <Text style={styles.modalSubtitle}>
+              {visitData?.title || 'your visit'}
+            </Text>
+            <Text style={styles.modalMessage}>Was the visit completed?</Text>
+            <View style={styles.modalButtonContainer}>
+              <TouchableOpacity
+                style={[styles.modalButton, styles.modalButtonNo]}
+                onPress={handleCompletionNo}>
+                <Text style={styles.modalButtonTextNo}>No, Continue</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={[styles.modalButton, styles.modalButtonYes]}
+                onPress={handleCompletionYes}>
+                <Text style={styles.modalButtonTextYes}>Yes, Complete</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </Modal>
     </View>
   );
 }
@@ -242,5 +347,75 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '600',
     marginLeft: 8,
+  },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  modalContent: {
+    backgroundColor: '#E6DFDB',
+    borderRadius: 16,
+    padding: 30,
+    alignItems: 'center',
+    marginHorizontal: 20,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 8,
+  },
+  modalHeader: {
+    marginBottom: 20,
+  },
+  modalTitle: {
+    fontSize: 28,
+    fontWeight: 'bold',
+    color: '#211C1F',
+    marginBottom: 8,
+    textAlign: 'center',
+  },
+  modalSubtitle: {
+    fontSize: 18,
+    fontWeight: '600',
+    color: '#43DABC',
+    marginBottom: 12,
+    textAlign: 'center',
+  },
+  modalMessage: {
+    fontSize: 16,
+    color: '#666',
+    textAlign: 'center',
+    marginBottom: 30,
+    lineHeight: 22,
+  },
+  modalButtonContainer: {
+    flexDirection: 'row',
+    gap: 12,
+    width: '100%',
+  },
+  modalButton: {
+    flex: 1,
+    paddingVertical: 14,
+    borderRadius: 10,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  modalButtonNo: {
+    backgroundColor: '#ADB9E3',
+  },
+  modalButtonYes: {
+    backgroundColor: '#43DABC',
+  },
+  modalButtonTextNo: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#211C1F',
+  },
+  modalButtonTextYes: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#FFFFFF',
   },
 });

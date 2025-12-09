@@ -37,11 +37,13 @@ export default function App() {
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
       <SafeAreaProvider>
-        <StatusBar
-          barStyle="dark-content"
-          backgroundColor={COLORS.light} // Updated to use COLORS
-        />
-        <Navigation />
+        <SafeAreaView style={styles.container}>
+          <StatusBar
+            barStyle="dark-content"
+            backgroundColor={COLORS.light} // Updated to use COLORS
+          />
+          <Navigation />
+        </SafeAreaView>
       </SafeAreaProvider>
     </GestureHandlerRootView>
   );
@@ -50,5 +52,6 @@ export default function App() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    backgroundColor: COLORS.light,
   },
 });

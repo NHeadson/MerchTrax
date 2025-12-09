@@ -63,17 +63,32 @@ export default function AddVisitScreen({ navigation }) {
 
     try {
       const visitsCollection = collection(db, 'visits');
+
+      // Format time_to_start as "HH:MM"
+      const hours = String(timeToStart.getHours()).padStart(2, '0');
+      const minutes = String(timeToStart.getMinutes()).padStart(2, '0');
+      const formattedTime = `${hours}:${minutes}`;
+
       await addDoc(visitsCollection, {
         store_name: storeName,
         location: location,
         task_title: taskTitle,
-        time_to_start: timeToStart.toISOString(),
-        time_to_complete: parseInt(timeToComplete, 10),
+        title: `${storeName} - ${taskTitle}`,
+        time_to_start: formattedTime,
+        allotted_minutes: parseInt(timeToComplete, 10),
         date: date, // This is now a safe Local string "YYYY-MM-DD"
         completed: false,
-        title: `${storeName} - ${taskTitle}`,
       });
       Alert.alert('Success', 'Visit added successfully');
+
+      // Clear form
+      setStoreName('');
+      setLocation('');
+      setTaskTitle('');
+      setTimeToStart(new Date());
+      setTimeToComplete('');
+      setDate(new Date().toISOString().split('T')[0]);
+
       navigation.goBack();
     } catch (error) {
       Alert.alert('Error', 'Failed to add visit');

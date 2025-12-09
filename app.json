@@ -5,7 +5,7 @@
     "version": "1.0.0",
     "orientation": "portrait",
     "userInterfaceStyle": "light",
-    "newArchEnabled": true,
+    "newArchEnabled": false,
     "splash": {
       "resizeMode": "contain",
       "backgroundColor": "#ffffff"
@@ -20,9 +20,20 @@
         "foregroundImage": "./assets/android-icon.png",
         "backgroundColor": "#192745"
       },
-      "package": "com.headsonn.MerchTrax"
+      "package": "com.headsonn.MerchTrax",
+      "runtimeVersion": {
+        "policy": "appVersion"
+      }
     },
     "web": {},
-    "plugins": []
+    "plugins": [],
+    "extra": {
+      "eas": {
+        "projectId": "6b1139ed-054e-47b3-9851-560c3380459a"
+      }
+    },
+    "updates": {
+      "url": "https://u.expo.dev/6b1139ed-054e-47b3-9851-560c3380459a"
+    }
   }
 }
