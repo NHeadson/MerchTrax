@@ -48,11 +48,10 @@ export default function CountdownTimer({
           cancelPersistentNotification();
           setEndTime(null);
 
-          // Only call onTimerEnd once
-          if (!timerEndedRef.current && onTimerEnd) {
+          // Mark ended; callback will run in an effect to avoid
+          // updating parent state during child render
+          if (!timerEndedRef.current) {
             timerEndedRef.current = true;
-            // Call the callback (shows alert in app)
-            onTimerEnd();
           }
           return 0;
         }
@@ -364,6 +363,23 @@ export default function CountdownTimer({
       }
     };
   }, [paused, endTime, tick]);
+
+  // Invoke onTimerEnd after render when seconds reaches 0
+  useEffect(() => {
+    if (seconds === 0 && timerEndedRef.current) {
+      // Defer to next tick to ensure we're out of render phase
+      const id = setTimeout(() => {
+        try {
+          if (onTimerEnd) {
+            onTimerEnd();
+          }
+        } finally {
+          timerEndedRef.current = false; // prevent repeated calls
+        }
+      }, 0);
+      return () => clearTimeout(id);
+    }
+  }, [seconds, onTimerEnd]);
 
   const formatTime = (secs) => {
     const minutes = Math.floor(secs / 60);

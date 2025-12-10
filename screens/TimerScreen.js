@@ -101,7 +101,7 @@ export default function TimerScreen() {
         Alert.alert('Error', 'Could not complete the visit. Please try again.');
       }
     }
-    setCompletionModalVisible(false);
+    setShowCompletionModal(false);
   };
 
   const handleRestart = () => {
