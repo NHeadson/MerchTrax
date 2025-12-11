@@ -21,6 +21,8 @@ export default function CustomTimePicker({
     <View style={[styles.container, style]}>
       <TouchableOpacity
         onPress={() => setShowPicker(true)}
+        accessibilityRole="button"
+        accessibilityLabel="Open time picker"
         style={styles.button}>
         <Text style={[styles.text, textStyle]}>
           {value.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
@@ -32,6 +34,7 @@ export default function CustomTimePicker({
           mode="time"
           display="default"
           onChange={handlePickerChange}
+          accessibilityLabel="Time picker"
           textColor="#211C1F"
         />
       )}
@@ -44,7 +47,7 @@ const styles = StyleSheet.create({
     marginBottom: 16,
   },
   button: {
-    backgroundColor: '#ADB9E3', 
+    backgroundColor: '#ADB9E3',
     padding: 10,
     borderRadius: 5,
     alignItems: 'center',

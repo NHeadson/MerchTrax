@@ -170,6 +170,7 @@ export default function AddVisitScreen({ navigation }) {
         <CustomButton
           title="Add Visit"
           onPress={handleAddVisit}
+          accessibilityLabel="Add a new visit"
           style={{
             backgroundColor: '#211C1F',
             marginTop: 20,

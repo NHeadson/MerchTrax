@@ -9,6 +9,7 @@ import {
   Alert,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { COLORS } from '../theme';
 import { db } from '../firebase';
 import {
   collection,
@@ -226,6 +227,8 @@ export default function HistoryScreen() {
                 </View>
                 <TouchableOpacity
                   style={styles.deleteButton}
+                  accessibilityRole="button"
+                  accessibilityLabel={`Delete visit ${visit.store_name}`}
                   onPress={() => confirmDelete(visit.id, visit.store_name)}>
                   <Ionicons
                     name="trash-outline"
@@ -245,12 +248,12 @@ export default function HistoryScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#E6DFDB',
+    backgroundColor: COLORS.light,
   },
   title: {
     fontSize: 28,
     fontWeight: 'bold',
-    color: '#211C1F',
+    color: COLORS.dark,
     marginTop: 16,
     marginBottom: 12,
     textAlign: 'center',
@@ -265,10 +268,10 @@ const styles = StyleSheet.create({
   dateHeader: {
     fontSize: 20,
     fontWeight: 'bold',
-    color: '#211C1F',
+    color: COLORS.dark,
     marginBottom: 10,
     paddingLeft: 5,
-    backgroundColor: '#ADB9E3',
+    backgroundColor: COLORS.accent2,
     paddingVertical: 8,
     paddingHorizontal: 12,
     borderRadius: 8,
@@ -280,7 +283,7 @@ const styles = StyleSheet.create({
     padding: 12,
     marginBottom: 10,
     borderLeftWidth: 4,
-    borderLeftColor: '#43DABC',
+    borderLeftColor: COLORS.accent,
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'flex-start',
@@ -337,7 +340,7 @@ const styles = StyleSheet.create({
   emptyStateTitle: {
     fontSize: 28,
     fontWeight: 'bold',
-    color: '#211C1F',
+    color: COLORS.dark,
     marginBottom: 15,
     textAlign: 'center',
   },

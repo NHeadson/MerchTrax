@@ -12,6 +12,8 @@ export default function CustomDatePicker({ value, onChange }) {
     <View>
       <TouchableOpacity
         onPress={handleOpenModal}
+        accessibilityRole="button"
+        accessibilityLabel="Open date picker"
         style={styles.input}>
         <Text style={styles.buttonText}>{value.toDateString()}</Text>
       </TouchableOpacity>

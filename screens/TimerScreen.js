@@ -17,6 +17,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { db } from '../firebase';
 import { doc, updateDoc } from 'firebase/firestore';
 import CountdownTimer from '../components/CountdownTimer';
+import { COLORS } from '../theme';
 
 export default function TimerScreen() {
   const route = useRoute();
@@ -144,7 +145,7 @@ export default function TimerScreen() {
           <Ionicons
             name="timer-outline"
             size={80}
-            color="#ADB9E3"
+            color={COLORS.accent2}
             style={styles.emptyStateIcon}
           />
           <Text style={styles.emptyStateTitle}>No Active Timer</Text>
@@ -158,7 +159,7 @@ export default function TimerScreen() {
             <Ionicons
               name="list"
               size={20}
-              color="#211C1F"
+              color={COLORS.dark}
             />
             <Text style={styles.selectVisitButtonText}>Select a Visit</Text>
           </TouchableOpacity>
@@ -223,7 +224,7 @@ export default function TimerScreen() {
               <Ionicons
                 name="checkmark-circle"
                 size={60}
-                color="#43DABC"
+                color={COLORS.accent}
               />
             </View>
             <Text style={styles.modalTitle}>Time's Up!</Text>

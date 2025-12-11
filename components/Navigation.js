@@ -4,6 +4,7 @@ import { NavigationContainer } from '@react-navigation/native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { Ionicons } from '@expo/vector-icons';
+import { COLORS } from '../theme';
 import { useNavigation } from '@react-navigation/native';
 import HomeScreen from '../screens/HomeScreen';
 import HistoryScreen from '../screens/HistoryScreen';
@@ -21,7 +22,7 @@ function HomeStack() {
         name="HomeStack_Home"
         component={HomeScreen}
         options={{
-          headerStyle: { backgroundColor: '#211C1F' },
+          headerStyle: { backgroundColor: COLORS.dark },
           headerTintColor: '#fff',
           headerTitleStyle: { fontWeight: 'bold' },
           headerTitle: 'Home',
@@ -37,6 +38,8 @@ function AddButton() {
   return (
     <TouchableOpacity
       style={styles.addButton}
+      accessibilityRole="button"
+      accessibilityLabel="Add a new visit"
       onPress={() => navigation.navigate('Add')}>
       <Ionicons
         name="add"
@@ -54,7 +57,7 @@ function VisitsStack() {
         name="VisitsStack_Visits"
         component={VisitsScreen}
         options={{
-          headerStyle: { backgroundColor: '#211C1F' },
+          headerStyle: { backgroundColor: COLORS.dark },
           headerTintColor: '#fff',
           headerTitleStyle: { fontWeight: 'bold' },
           headerTitle: 'Visits',
@@ -71,7 +74,7 @@ function TimerStack() {
         name="TimerStack_Timer"
         component={TimerScreen}
         options={{
-          headerStyle: { backgroundColor: '#211C1F' },
+          headerStyle: { backgroundColor: COLORS.dark },
           headerTintColor: '#fff',
           headerTitleStyle: { fontWeight: 'bold' },
           headerTitle: 'Timer',
@@ -88,7 +91,7 @@ function HistoryStack() {
         name="HistoryStack_History"
         component={HistoryScreen}
         options={{
-          headerStyle: { backgroundColor: '#211C1F' },
+          headerStyle: { backgroundColor: COLORS.dark },
           headerTintColor: '#fff',
           headerTitleStyle: { fontWeight: 'bold' },
           headerTitle: 'History',
@@ -126,11 +129,11 @@ export default function Navigation() {
           },
           tabBarShowLabel: false,
           tabBarStyle: {
-            backgroundColor: '#211C1F',
+            backgroundColor: COLORS.dark,
             borderTopWidth: 0,
           },
           tabBarActiveTintColor: '#fff',
-          tabBarInactiveTintColor: '#ADB9E3',
+          tabBarInactiveTintColor: COLORS.accent2,
         })}>
         <Tab.Screen
           name="Home"
@@ -148,10 +151,11 @@ export default function Navigation() {
           options={{
             tabBarButton: (props) => (
               <AddButton navigation={props.navigation} />
-            ), headerStyle: { backgroundColor: '#211C1F' },
-          headerTintColor: '#fff',
-          headerTitleStyle: { fontWeight: 'bold' },
-          headerTitle: 'Add a New Visit',
+            ),
+            headerStyle: { backgroundColor: COLORS.dark },
+            headerTintColor: '#fff',
+            headerTitleStyle: { fontWeight: 'bold' },
+            headerTitle: 'Add a New Visit',
           }}
         />
         <Tab.Screen
@@ -174,7 +178,7 @@ const styles = StyleSheet.create({
     width: 60,
     height: 60,
     borderRadius: 30,
-    backgroundColor: '#ADB9E3', // Accent color for button background
+    backgroundColor: COLORS.accent2, // Accent color for button background
     justifyContent: 'center',
     alignItems: 'center',
     position: 'absolute',
@@ -187,6 +191,6 @@ const styles = StyleSheet.create({
     elevation: 5,
   },
   addButtonIcon: {
-    color: '#211C1F', // Dark color for icon
+    color: COLORS.dark, // Dark color for icon
   },
 });

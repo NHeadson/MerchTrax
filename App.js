@@ -5,6 +5,7 @@ import { StatusBar } from 'react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import * as Notifications from 'expo-notifications';
 import { useEffect } from 'react';
+import { COLORS } from './theme';
 
 // Set up notification handler
 Notifications.setNotificationHandler({
@@ -15,12 +16,7 @@ Notifications.setNotificationHandler({
   }),
 });
 
-const COLORS = {
-  light: '#FFEAEE',
-  dark: '#192745',
-  accent: '#43DABC',
-  accent2: '#7F675B',
-};
+// COLORS provided via theme.js
 
 export default function App() {
   useEffect(() => {

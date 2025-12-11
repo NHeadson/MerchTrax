@@ -5,6 +5,9 @@ export default function CustomButton({ title, onPress, style, disabled }) {
   return (
     <TouchableOpacity
       onPress={onPress}
+      accessibilityRole="button"
+      accessibilityLabel={title}
+      accessibilityState={{ disabled: !!disabled }}
       style={[styles.button, style, disabled && styles.disabled]}
       disabled={disabled}>
       <Text style={styles.text}>{title}</Text>

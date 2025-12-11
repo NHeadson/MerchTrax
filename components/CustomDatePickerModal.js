@@ -21,8 +21,18 @@ export default function CustomDatePickerModal({
   }, [value]);
 
   const months = [
-    'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
-    'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec',
+    'Jan',
+    'Feb',
+    'Mar',
+    'Apr',
+    'May',
+    'Jun',
+    'Jul',
+    'Aug',
+    'Sep',
+    'Oct',
+    'Nov',
+    'Dec',
   ];
 
   // Simple array 1-31
@@ -38,10 +48,10 @@ export default function CustomDatePickerModal({
     // Create the date using Local Time arguments (Year, Month Index, Day Number)
     // This prevents the UTC timezone shift.
     const selectedDate = new Date(selectedYear, selectedMonth, selectedDay);
-    
-    // Optional: Lock to noon to be extra safe against Daylight Savings shifts, 
+
+    // Optional: Lock to noon to be extra safe against Daylight Savings shifts,
     // but the constructor above usually solves it.
-    selectedDate.setHours(12, 0, 0, 0); 
+    selectedDate.setHours(12, 0, 0, 0);
 
     onChange(selectedDate);
     onClose();
@@ -59,12 +69,11 @@ export default function CustomDatePickerModal({
         <View style={styles.modalContainer}>
           <Text style={styles.title}>Select Date</Text>
           <View style={styles.pickerContainer}>
-            
             {/* MONTH PICKER */}
             <Picker
               selectedValue={selectedMonth}
               onValueChange={(itemValue) => setSelectedMonth(itemValue)}
-              style={styles.picker}
+              style={[styles.picker, styles.pickerMonth]}
               itemStyle={styles.pickerItem}
               mode="dialog">
               {months.map((month, index) => (
@@ -80,7 +89,7 @@ export default function CustomDatePickerModal({
             <Picker
               selectedValue={selectedDay}
               onValueChange={(itemValue) => setSelectedDay(itemValue)}
-              style={styles.picker}
+              style={[styles.picker, styles.pickerDay]}
               itemStyle={styles.pickerItem}
               mode="dialog">
               {days.map((day, index) => (
@@ -88,7 +97,7 @@ export default function CustomDatePickerModal({
                   key={index}
                   label={day}
                   // FIX: Use 'index + 1' so value is 1-31, not 0-30
-                  value={index + 1} 
+                  value={index + 1}
                 />
               ))}
             </Picker>
@@ -97,8 +106,9 @@ export default function CustomDatePickerModal({
             <Picker
               selectedValue={selectedYear}
               onValueChange={(itemValue) => setSelectedYear(itemValue)}
-              style={styles.picker}
-              itemStyle={styles.pickerItem}>
+              style={[styles.picker, styles.pickerYear]}
+              itemStyle={styles.pickerItem}
+              mode="dialog">
               {years.map((year) => (
                 <Picker.Item
                   key={year}
@@ -108,12 +118,16 @@ export default function CustomDatePickerModal({
               ))}
             </Picker>
           </View>
-          
+
           <View style={styles.buttonContainer}>
-            <Text style={styles.button} onPress={onClose}>
+            <Text
+              style={styles.button}
+              onPress={onClose}>
               Cancel
             </Text>
-            <Text style={styles.button} onPress={handleConfirm}>
+            <Text
+              style={styles.button}
+              onPress={handleConfirm}>
               Confirm
             </Text>
           </View>
@@ -131,10 +145,10 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   modalContainer: {
-    width: '90%',
+    width: Platform.OS === 'ios' ? '90%' : '98%',
     backgroundColor: '#FFFFFF',
     borderRadius: 15,
-    padding: 30,
+    padding: Platform.OS === 'ios' ? 30 : 20,
     alignItems: 'center',
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
@@ -151,26 +165,34 @@ const styles = StyleSheet.create({
   pickerContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'space-evenly',
+    justifyContent: 'space-between',
     marginBottom: 10,
-    height: Platform.OS === 'ios' ? 80 : 60,
-    width: Platform.OS === 'ios' ? '90%' : '80%',
+    height: Platform.OS === 'ios' ? 216 : 80,
+    width: '100%',
+    paddingHorizontal: 0,
   },
   picker: {
-    overflow: 'hidden',
-  },
-  picker: {
-    width: Platform.OS === 'ios' ? 100 : 100,
-    height: Platform.OS === 'ios' ? 80 : 60,
+    height: Platform.OS === 'ios' ? 216 : 80,
     borderRadius: 10,
-    marginHorizontal: 5,
-    paddingBottom: Platform.OS === 'ios' ? 210 : 0,
-    overflow: 'hidden',
+    marginHorizontal: 0,
+    overflow: Platform.OS === 'ios' ? 'visible' : 'hidden',
+    // Use flex distribution instead of fixed percentage to avoid truncation
+    flexBasis: 0,
   },
   pickerItem: {
-    fontSize: Platform.OS === 'ios' ? 16 : 20,
+    fontSize: 16,
     color: '#211C1F',
     fontWeight: 'bold',
+  },
+  // Allocate more space to the year column on Android to avoid ellipsis
+  pickerMonth: {
+    flex: Platform.OS === 'ios' ? 1 : 3,
+  },
+  pickerDay: {
+    flex: Platform.OS === 'ios' ? 1 : 3,
+  },
+  pickerYear: {
+    flex: Platform.OS === 'ios' ? 1 : 4,
   },
   buttonContainer: {
     flexDirection: 'row',
